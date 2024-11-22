@@ -1,8 +1,9 @@
 use std::env;
 // use tauri::{WebviewUrl, WebviewWindowBuilder};
 
-#[cfg(target_os = "macos")]
-use tauri::TitleBarStyle;
+// #[cfg(target_os = "macos")]
+// use tauri::TitleBarStyle;
+
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 // const APP_TITLE: &str = "Control";

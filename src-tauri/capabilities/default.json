@@ -8,15 +8,6 @@
   "permissions": [
     "core:default",
     "shell:allow-open",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "python_server",
-          "sidecar": true
-        }
-      ]
-    },
     "os:default",
     "core:event:default",
     "core:window:default",
@@ -30,7 +21,10 @@
       "identifier": "fs:default",
       "allow": [
         {
-          "path": "C:\\Users\\*\\AppData\\Roaming\\*"
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPCONFIG/*"
         }
       ]
     },

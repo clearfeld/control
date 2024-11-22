@@ -1,7 +1,7 @@
 [package]
 name = "control"
 version = "0.1.1"
-description = "A Tauri App"
+description = "An AI Gui app to handle connecting to various cloud or local ai models."
 authors = ["you"]
 edition = "2021"
 

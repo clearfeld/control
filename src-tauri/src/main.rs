@@ -2,7 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    dotenvy::dotenv().expect("Failed to load .env file");
+    // dotenvy::dotenv().expect("Failed to load .env file");
 
     control_lib::run()
 }
