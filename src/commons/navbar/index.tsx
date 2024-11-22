@@ -18,6 +18,7 @@ console.log(sqlite_db);
 
 // TODO: use stronghold or something better instead of a plaintext store
 import { store } from "../../stores/store_helper";
+import MacControls from "./mac_controls";
 // import { Link } from "react-router-dom";
 
 const styles = stylex.create({
@@ -130,6 +131,8 @@ export default function Navbar() {
 			data-tauri-drag-region
 			{...stylex.props(styles.base)}
 		>
+			{currentPlatform === "macosx" && <MacControls />}
+
 			<p
 				data-tauri-drag-region
 				style={{

@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "python-server"
+version = "0.1.0"
+description = ""
+authors = ["Marko <49600278+clearfeld@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+psutil = "^6.1.0"
+fastapi = "^0.115.5"
+uvicorn = "^0.32.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.7.4"
+mypy = "^1.13.0"
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-pyinstaller-plugin.scripts]
+# Single file bundled in wheel
+python_server = { source = "python_server/__init__.py", type = "onefile", bundle = true}
+
+[tool.ruff]
+line-length = 100
