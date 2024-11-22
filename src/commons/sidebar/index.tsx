@@ -1,16 +1,18 @@
 import { sqlite_db } from "@src/stores/sqlite";
+
 import {
 	Button,
 	Divider,
-	H6,
+	// H6,
 	LoadingSize,
 	LoadingSpinner,
-	Lozenge,
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
+	// Lozenge,
+	// Tooltip,
+	// TooltipContent,
+	// TooltipProvider,
+	// TooltipTrigger,
 } from "@controlkit/ui";
+
 import * as stylex from "@stylexjs/stylex";
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -337,7 +339,8 @@ function ChatList() {
 	const [loading, setLoading] = useState(true);
 
 	const [chat_id, setChatId] = useState<number | null>(null);
-	const [searchParams, setSearchParams] = useSearchParams();
+	// const [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams] = useSearchParams();
 
 	useEffect(() => {
 		const q = searchParams.get("chat_id");
@@ -354,7 +357,7 @@ function ChatList() {
 		console.log(sqlite_db);
 		const vals = await sqlite_db.select(`SELECT * FROM chats ORDER BY updated_at DESC;`);
 		console.log("Chats - ", vals);
-		setChats(vals);
+		setChats((vals as T_Chat[]));
 		setLoading(false);
 	}
 

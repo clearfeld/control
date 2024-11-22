@@ -5,7 +5,7 @@ import { appDataDir } from "@tauri-apps/api/path";
 // when using `"withGlobalTauri": true`, you may use
 // const { appDataDir } = window.__TAURI__.path;
 
-const CLIENT_NAME = "Control";
+// const CLIENT_NAME = "Control";
 
 type G_Stronghold = {
 	stronghold: Stronghold | null;

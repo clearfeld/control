@@ -16,7 +16,7 @@ import remarkGfm from "remark-gfm";
 import { open } from "@tauri-apps/plugin-shell";
 
 import { bundledLanguages, bundledThemes, createHighlighter } from "shiki";
-import * as stylex from "@stylexjs/stylex";
+// import * as stylex from "@stylexjs/stylex";
 
 // import "./shiki_temp.css";
 
@@ -30,13 +30,13 @@ highlighter.codeToHtml("const a = 1", {
 	theme: "poimandres",
 });
 
-const styles = stylex.create({
-	container: {
-		width: "100%",
-		boxSizing: "border-box",
-		padding: "1rem",
-	},
-});
+// const styles = stylex.create({
+// 	container: {
+// 		width: "100%",
+// 		boxSizing: "border-box",
+// 		padding: "1rem",
+// 	},
+// });
 
 export function Editor(props: any) {
 	return (
@@ -79,7 +79,7 @@ export function Editor(props: any) {
 							return <H6 style={{ padding: "0.5rem 0" }}>{props.children}</H6>;
 						},
 
-						hr(props) {
+						hr(_props) {
 							return (
 								<Divider
 									style={{
@@ -101,7 +101,7 @@ export function Editor(props: any) {
 
 										// TODO: should check if valid or safe url incase of hallucination
 
-										open(props.href);
+										open(props.href as string);
 									}}
 								>
 									{props.children}

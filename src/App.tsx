@@ -13,16 +13,15 @@ import {
 	// Link,
 	Outlet,
 	Navigate,
-	useNavigate,
 } from "react-router-dom";
 
 import { InitializeHelper } from "./commons/initialize_helper";
 
 import SettingsPage from "./pages/settings";
-import { useEffect } from "react";
-import { useSetAtom } from "jotai";
-import { xapikeyAtom } from "./stores/jotai/x_api_key";
-import { store } from "./stores/store_helper";
+// import { useEffect } from "react";
+// import { useSetAtom } from "jotai";
+// import { xapikeyAtom } from "./stores/jotai/x_api_key";
+// import { store } from "./stores/store_helper";
 
 import { XAIModelsPage } from "./pages/xAI/models";
 

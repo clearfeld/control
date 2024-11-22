@@ -13,7 +13,7 @@ export async function CheckForUpdateAndAttemptToDownloadAndInstall() {
 		await update.downloadAndInstall((event) => {
 			switch (event.event) {
 				case "Started":
-					contentLength = event.data.contentLength;
+					contentLength = (event.data.contentLength as number);
 					console.log(`started downloading ${event.data.contentLength} bytes`);
 					break;
 				case "Progress":

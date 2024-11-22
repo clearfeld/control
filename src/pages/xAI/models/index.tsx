@@ -1,6 +1,15 @@
-import { Divider, H1, H2, H3, H4, H5, LoadingSpinner, Lozenge } from "@controlkit/ui";
+import {
+	Divider,
+	H1,
+	// H2,
+	// H3,
+	H4,
+	H5,
+	LoadingSpinner,
+	Lozenge,
+} from "@controlkit/ui";
 import { xapikeyAtom } from "@src/stores/jotai/x_api_key";
-import { T_XAILanguageModel, xAiModelsAtom } from "@src/stores/jotai/x_models";
+import { type T_XAILanguageModel, xAiModelsAtom } from "@src/stores/jotai/x_models";
 import * as stylex from "@stylexjs/stylex";
 import axios from "axios";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -49,7 +58,11 @@ export function XAIModelsPage() {
 		// 	completion_text_token_price: 150000,
 		// },
 	]);
-	const [embeddingModels, setEmbeddingModels] = useState<any[] | null>(null);
+
+	// const [
+	// 	embeddingModels,
+	// 	setEmbeddingModels,
+	// ] = useState<any[] | null>(null);
 
 	useEffect(() => {
 		if (languageModels !== null) {
@@ -73,21 +86,21 @@ export function XAIModelsPage() {
 		// AttemptToGetEmbeddingModels();
 	}, []);
 
-	function AttemptToGeModels() {
-		const headers = {
-			Authorization: `Bearer ${XAPIKeyAtom}`,
-		};
+	// function AttemptToGeModels() {
+	// 	const headers = {
+	// 		Authorization: `Bearer ${XAPIKeyAtom}`,
+	// 	};
 
-		axios
-			.get("https://api.x.ai/v1/models", { headers })
-			.then((res) => {
-				console.log("Models - ", res.data);
-				// setLanguageModels(res.data);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
-	}
+	// 	axios
+	// 		.get("https://api.x.ai/v1/models", { headers })
+	// 		.then((res) => {
+	// 			console.log("Models - ", res.data);
+	// 			// setLanguageModels(res.data);
+	// 		})
+	// 		.catch((err) => {
+	// 			console.log(err);
+	// 		});
+	// }
 
 	function AttemptToGetLanguageModels() {
 		const headers = {
@@ -119,21 +132,21 @@ export function XAIModelsPage() {
 			});
 	}
 
-	function AttemptToGetEmbeddingModels() {
-		const headers = {
-			Authorization: `Bearer ${XAPIKeyAtom}`,
-		};
+	// function AttemptToGetEmbeddingModels() {
+	// 	const headers = {
+	// 		Authorization: `Bearer ${XAPIKeyAtom}`,
+	// 	};
 
-		axios
-			.get("https://api.x.ai/v1/embedding-models", { headers })
-			.then((res) => {
-				console.log("Embedding Models - ", res.data);
-				setEmbeddingModels(res.data);
-			})
-			.catch((err) => {
-				console.log(err);
-			});
-	}
+	// 	axios
+	// 		.get("https://api.x.ai/v1/embedding-models", { headers })
+	// 		.then((res) => {
+	// 			console.log("Embedding Models - ", res.data);
+	// 			setEmbeddingModels(res.data);
+	// 		})
+	// 		.catch((err) => {
+	// 			console.log(err);
+	// 		});
+	// }
 
 	return (
 		<div {...stylex.props(styles.base)}>

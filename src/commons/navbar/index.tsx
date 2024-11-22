@@ -9,7 +9,7 @@ import MaximizeSVG from "@assets/mdi_window-maximize.svg?react";
 // @ts-ignore
 import CloseSVG from "@assets/mdi_close.svg?react";
 import { useEffect, useState } from "react";
-import { Window, currentMonitor } from "@tauri-apps/api/window";
+// import { Window, currentMonitor } from "@tauri-apps/api/window";
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
@@ -18,7 +18,7 @@ console.log(sqlite_db);
 
 // TODO: use stronghold or something better instead of a plaintext store
 import { store } from "../../stores/store_helper";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 const styles = stylex.create({
 	base: {
@@ -80,8 +80,8 @@ const window_styles = stylex.create({
 
 export default function Navbar() {
 	// const [curRoute, setCurRoute] = useState<T_NavRoutes>("Tools");
-	const [curRoute, setCurRoute] = useState("Tools");
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	// const [curRoute, setCurRoute] = useState("Tools");
+	// const [isLoggedIn, setIsLoggedIn] = useState(false);
 
 	const [currentPlatform, setCurrentPlatform] = useState<string>("macosx");
 
@@ -99,10 +99,10 @@ export default function Navbar() {
 		setCurrentPlatform(currentPlatform);
 	}
 
-	async function test_write() {
-		await store.set("some-key", { value: 5 });
-		await store.save();
-	}
+	// async function test_write() {
+	// 	await store.set("some-key", { value: 5 });
+	// 	await store.save();
+	// }
 
 	async function test_read() {
 		const val = await store.get("some-key");

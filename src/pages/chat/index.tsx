@@ -1,11 +1,22 @@
 import { useAtom, useAtomValue } from "jotai";
 import UserInputArea from "./user_input_area";
-import * as stylex from "@stylexjs/stylex";
-import { xAiModelsAtom } from "@src/stores/jotai/x_models";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+// import * as stylex from "@stylexjs/stylex";
+// import { xAiModelsAtom } from "@src/stores/jotai/x_models";
+import {
+	useEffect,
+	// useLayoutEffect,
+	useRef,
+	useState
+} from "react";
 import { xapikeyAtom } from "@src/stores/jotai/x_api_key";
 import { Editor } from "./display_text_block";
-import { replace, useBlocker, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import {
+	// replace,
+	useBlocker,
+	// useLocation,
+	useNavigate,
+	useSearchParams
+} from "react-router-dom";
 import { sqlite_db } from "@src/stores/sqlite";
 import {
 	AlertDialog,
@@ -16,39 +27,47 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
+	// AlertDialogTrigger,
 	Button,
 	ButtonVariants,
 	H5,
 	Lozenge,
 } from "@controlkit/ui";
-import { chatsAtom, T_Chat } from "@src/stores/jotai/chats";
+import { chatsAtom, type T_Chat } from "@src/stores/jotai/chats";
 
-const styles = stylex.create({
-	prompt_card: {
-		border: "1px solid var(--border-color)",
-		width: "10rem",
-		fontSize: "0.875rem",
-		fontWeight: "bold",
-		padding: "0.5rem",
-		height: "6rem",
-		display: "flex",
-		flexDirection: "column",
+// const styles = stylex.create({
+// 	prompt_card: {
+// 		border: "1px solid var(--border-color)",
+// 		width: "10rem",
+// 		fontSize: "0.875rem",
+// 		fontWeight: "bold",
+// 		padding: "0.5rem",
+// 		height: "6rem",
+// 		display: "flex",
+// 		flexDirection: "column",
 
-		cursor: "pointer",
+// 		cursor: "pointer",
 
-		transition: "background-color var(--transition-speed) ease",
+// 		transition: "background-color var(--transition-speed) ease",
 
-		":hover": {
-			backgroundColor: "var(--color-bg-compliment)",
-		},
-	},
-});
+// 		":hover": {
+// 			backgroundColor: "var(--color-bg-compliment)",
+// 		},
+// 	},
+// });
+
+type T_ChatMeta = {
+	id: number;
+	title: string;
+	model: string;
+	updated_at: number;
+	created_at: number;
+};
 
 export default function ChatPage() {
 	const [chats, setChats] = useAtom<T_Chat[]>(chatsAtom);
 
-	const xAiModels = useAtomValue(xAiModelsAtom);
+	// const xAiModels = useAtomValue(xAiModelsAtom);
 	const x_api_key = useAtomValue(xapikeyAtom);
 
 	const navigate = useNavigate();
@@ -56,9 +75,9 @@ export default function ChatPage() {
 	const [text, setText] = useState<string>("");
 	const [inProgres, setInProgress] = useState<boolean>(false);
 
-	let blocker = useBlocker(({ currentLocation, nextLocation }) => inProgres === true);
+	const blocker = useBlocker(() => inProgres === true);
 
-	const [chatMeta, setChatMeta] = useState<any>({
+	const [chatMeta, setChatMeta] = useState<T_ChatMeta>({
 		id: -1,
 		title: "New Chat",
 		model: "grok-beta",
@@ -69,11 +88,14 @@ export default function ChatPage() {
 
 	const [chatMessages, setChatMessages] = useState<any[]>([]);
 
-	let [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams] = useSearchParams();
 	useEffect(() => {
 		// HACK: clean this up later
 		setTimeout(() => {
-			document.getElementById("chat-area").scrollTo(999999999999, 999999999999);
+			const el = document.getElementById("chat-area");
+			if(el) {
+				el.scrollTo(999999999999, 999999999999);
+			}
 		}, 50);
 
 		AttemptToFetchChatHistory();
@@ -108,13 +130,13 @@ export default function ChatPage() {
 				`SELECT * FROM chats WHERE id = ${chatID.current};`,
 			);
 			console.log(vals);
-			setChatMeta(vals[0]);
+			setChatMeta((vals as T_ChatMeta[])[0]);
 
 			const valz = await sqlite_db.select(
 				`SELECT * FROM chat_messages WHERE chat_id = ${chatID.current};`,
 			);
 			console.log("Chatr messages - ", valz);
-			setChatMessages(valz);
+			setChatMessages(valz as any);
 		}
 
 		console.log("Chat id || ", chat_id);
@@ -352,7 +374,7 @@ export default function ChatPage() {
 	}
 
 	// TODO: prompt completions
-	async function AttemptToGetCompeltion() {
+	// async function AttemptToGetCompeltion() {
 		// // prompt completiions
 		// const response = await fetch("https://api.x.ai/v1/completions", {
 		// 	method: "POST",
@@ -419,7 +441,7 @@ export default function ChatPage() {
 		// 	}
 		// }
 		// chatStreamRef.current = "";
-	}
+	// }
 
 	return (
 		<div
@@ -666,18 +688,18 @@ export default function ChatPage() {
 	);
 }
 
-function PromptCard(props: any) {
-	return (
-		<div {...stylex.props(styles.prompt_card)}>
-			<p>{props.prompt}</p>
+// function PromptCard(props: any) {
+// 	return (
+// 		<div {...stylex.props(styles.prompt_card)}>
+// 			<p>{props.prompt}</p>
 
-			<div
-				style={{
-					height: "100%",
-				}}
-			/>
+// 			<div
+// 				style={{
+// 					height: "100%",
+// 				}}
+// 			/>
 
-			<p>icon</p>
-		</div>
-	);
-}
+// 			<p>icon</p>
+// 		</div>
+// 	);
+// }
