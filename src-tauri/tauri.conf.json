@@ -1,0 +1,43 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "Control",
+	"version": "0.1.0",
+	"identifier": "centercontrol",
+	"build": {
+		"beforeDevCommand": "bun run dev",
+		"devUrl": "http://localhost:1420",
+		"beforeBuildCommand": "bun run build",
+		"frontendDist": "../dist"
+	},
+	"app": {
+		"windows": [
+			{
+				"width": 965,
+				"height": 543,
+				"decorations": false
+			}
+		],
+		"security": {
+			"csp": null
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	},
+	"plugins": {
+		"updater": {
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFGNjY2NTgxMTA0RjhDRUUKUldUdWpFOFFnV1ZtSDhQT3puZ0RBc1ZKbnF2TXlhRmdxemloTEltODJqRjRId1VaWXdpZGVvMkkK",
+			"endpoints": [
+				"https://github.com/clearfeld/control/releases/latest/download/latest.json"
+			]
+		}
+	}
+}

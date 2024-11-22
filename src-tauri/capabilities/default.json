@@ -1,0 +1,59 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "shell:allow-open",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "python_server",
+          "sidecar": true
+        }
+      ]
+    },
+    "os:default",
+    "core:event:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-internal-toggle-maximize",
+    "stronghold:default",
+    {
+      "identifier": "fs:default",
+      "allow": [
+        {
+          "path": "C:\\Users\\*\\AppData\\Roaming\\*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:scope-appdata-recursive",
+      "allow": [
+        {
+          "path": "$APPDATA"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:scope-appconfig-recursive",
+      "allow": [
+        {
+          "path": "$APPCONFIG"
+        }
+      ]
+    },
+    "fs:allow-create",
+    "fs:allow-write-text-file",
+    "store:default",
+    "sql:default",
+    "sql:allow-execute"
+  ]
+}
