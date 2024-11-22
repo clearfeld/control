@@ -225,7 +225,7 @@ function DisplayLanguageModelCard(props: { model: any }) {
 
 				<div {...stylex.props(styles_card.modalities_wrap)}>
 					{props.model.input_modalities.map((modality: string) => {
-						return <Lozenge>{modality}</Lozenge>;
+						return <Lozenge key={modality}>{modality}</Lozenge>;
 					})}
 				</div>
 			</div>
@@ -235,7 +235,7 @@ function DisplayLanguageModelCard(props: { model: any }) {
 
 				<div {...stylex.props(styles_card.modalities_wrap)}>
 					{props.model.output_modalities.map((modality: string) => {
-						return <Lozenge>{modality}</Lozenge>;
+						return <Lozenge key={modality}>{modality}</Lozenge>;
 					})}
 				</div>
 			</div>
