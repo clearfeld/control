@@ -1,6 +1,8 @@
 import { Button } from "@controlkit/ui";
 import * as stylex from "@stylexjs/stylex";
 
+import { open } from "@tauri-apps/plugin-dialog";
+
 const styles = stylex.create({
 	container: {
 		width: "100%",
@@ -11,6 +13,18 @@ const styles = stylex.create({
 });
 
 export default function UserInputArea(props: any) {
+	async function SelectImageFiles(e) {
+		const file = await open({
+			multiple: false,
+			directory: false,
+		});
+		console.log(file);
+
+		const ns = [...props.attachments];
+		ns.push(file);
+		props.setAttachments(ns);
+	}
+
 	return (
 		<div {...stylex.props(styles.container)}>
 			<div
@@ -69,7 +83,7 @@ export default function UserInputArea(props: any) {
 					props.setText(e.target.value);
 				}}
 				onKeyDown={(e) => {
-					if (e.key === 'Enter' && !e.shiftKey) {
+					if (e.key === "Enter" && !e.shiftKey) {
 						e.preventDefault();
 						props.onSubmit();
 					}
@@ -88,8 +102,22 @@ export default function UserInputArea(props: any) {
 						gap: "1rem",
 					}}
 				>
-					{/* <p style={{ textWrap: "nowrap" }}>Add Attachment</p>
-					<p style={{ textWrap: "nowrap" }}>Add Image</p> */}
+					{/* <p style={{ textWrap: "nowrap" }}>Add Attachment</p> */}
+
+					<button
+						// style={ textWrap: "nowrap" }
+						onClick={SelectImageFiles}
+					>
+						Add Image
+					</button>
+
+					{props.attachments.map((attachment, index) => {
+						return (
+							<div key={attachment}>
+								<p>{attachment.substr(attachment.lastIndexOf("\\") + 1)}</p>
+							</div>
+						);
+					})}
 				</div>
 
 				<div

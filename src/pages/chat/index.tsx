@@ -6,7 +6,7 @@ import {
 	useEffect,
 	// useLayoutEffect,
 	useRef,
-	useState
+	useState,
 } from "react";
 import { xapikeyAtom } from "@src/stores/jotai/x_api_key";
 import { Editor } from "./display_text_block";
@@ -15,7 +15,7 @@ import {
 	useBlocker,
 	// useLocation,
 	useNavigate,
-	useSearchParams
+	useSearchParams,
 } from "react-router-dom";
 import { sqlite_db } from "@src/stores/sqlite";
 import {
@@ -30,10 +30,19 @@ import {
 	// AlertDialogTrigger,
 	Button,
 	ButtonVariants,
+	Divider,
 	H5,
 	Lozenge,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
 } from "@controlkit/ui";
 import { chatsAtom, type T_Chat } from "@src/stores/jotai/chats";
+import { type T_XAILanguageModel, xAiModelsAtom } from "@src/stores/jotai/x_models";
+import { ChatSelectedModelAtom } from "@src/stores/jotai/chat_selected_model";
+
+import { readFile } from "@tauri-apps/plugin-fs";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 // const styles = stylex.create({
 // 	prompt_card: {
@@ -67,7 +76,11 @@ type T_ChatMeta = {
 export default function ChatPage() {
 	const [chats, setChats] = useAtom<T_Chat[]>(chatsAtom);
 
-	// const xAiModels = useAtomValue(xAiModelsAtom);
+	const [chatSelectedModel, setChatSelectedModel] = useAtom<T_XAILanguageModel | null>(
+		ChatSelectedModelAtom,
+	);
+
+	const xAiModels = useAtomValue(xAiModelsAtom);
 	const x_api_key = useAtomValue(xapikeyAtom);
 
 	const navigate = useNavigate();
@@ -80,7 +93,7 @@ export default function ChatPage() {
 	const [chatMeta, setChatMeta] = useState<T_ChatMeta>({
 		id: -1,
 		title: "New Chat",
-		model: "grok-beta",
+		model: chatSelectedModel?.model ?? "grok-beta",
 		updated_at: Date.now(),
 		created_at: Date.now(),
 	});
@@ -88,12 +101,14 @@ export default function ChatPage() {
 
 	const [chatMessages, setChatMessages] = useState<any[]>([]);
 
+	const [attachments, setAttachments] = useState<string[]>([]);
+
 	const [searchParams] = useSearchParams();
 	useEffect(() => {
 		// HACK: clean this up later
 		setTimeout(() => {
 			const el = document.getElementById("chat-area");
-			if(el) {
+			if (el) {
 				el.scrollTo(999999999999, 999999999999);
 			}
 		}, 50);
@@ -120,6 +135,11 @@ export default function ChatPage() {
 			setText("");
 			setChatMessages([]);
 			setInProgress(false);
+			setChatSelectedModel({
+				model: "grok-beta",
+				input_modalities: ["text"],
+				output_modalities: ["text"],
+			});
 			// new chat
 			// console.log("Chat is -1");
 			// leave chat meta as null
@@ -131,6 +151,12 @@ export default function ChatPage() {
 			);
 			console.log(vals);
 			setChatMeta((vals as T_ChatMeta[])[0]);
+
+			setChatSelectedModel({
+				model: (vals as T_ChatMeta[])[0].model,
+				input_modalities: ["text"],
+				output_modalities: ["text"],
+			});
 
 			const valz = await sqlite_db.select(
 				`SELECT * FROM chat_messages WHERE chat_id = ${chatID.current};`,
@@ -172,6 +198,10 @@ export default function ChatPage() {
 
 		// debugger;
 
+		const model_name = chatSelectedModel?.model;
+		if (!model_name) return;
+		// TODO: print error in case this triggers
+
 		const new_message_plus_history_context = [];
 		new_message_plus_history_context.push({
 			role: "system",
@@ -193,6 +223,46 @@ export default function ChatPage() {
 			content: text,
 		});
 
+		if (attachments.length > 0) {
+			// const contents = await readTextFile(, {
+			// 	// baseDir: BaseDirectory.Home,
+			// });
+
+			// TODO: add url attachments
+
+			const img = await readFile(attachments[0]);
+			const base64 = btoa(String.fromCharCode(...img));
+			console.log(img);
+			console.log(base64);
+
+			setAttachments([]);
+
+			new_message_plus_history_context.push({
+				role: "user",
+				content: [
+					{
+						type: "text",
+						text: text,
+					},
+					// TODO: loop this object for each attachment
+					{
+						type: "image_url",
+						image_url: {
+							url: `data:image/${attachments[0].substr(attachments[0].lastIndexOf(".") + 1)};base64,${base64}`,
+						},
+					},
+				],
+			});
+		} else {
+			new_message_plus_history_context.push({
+				role: "user",
+				content: text,
+			});
+		}
+
+		console.log(new_message_plus_history_context);
+		// return;
+
 		const response = await fetch("https://api.x.ai/v1/chat/completions", {
 			method: "POST",
 			headers: {
@@ -200,7 +270,7 @@ export default function ChatPage() {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				model: "grok-beta",
+				model: model_name,
 				stream: true,
 				messages: new_message_plus_history_context,
 				// [
@@ -229,7 +299,7 @@ export default function ChatPage() {
 				VALUES ($1, $2, $3, $4)
 				RETURNING id;
 				`,
-				[text, "grok-beta", dn, dn],
+				[text, model_name, dn, dn],
 			);
 
 			console.log("DB Result Insert Chat - ", result);
@@ -239,7 +309,7 @@ export default function ChatPage() {
 			setChatMeta({
 				id: result.lastInsertId,
 				title: text,
-				model: "grok-beta",
+				model: model_name,
 				updated_at: dn,
 				created_at: dn,
 			});
@@ -248,7 +318,7 @@ export default function ChatPage() {
 			ns_chats.push({
 				id: result.lastInsertId,
 				title: text,
-				model: "grok-beta",
+				model: model_name,
 				updated_at: dn,
 				created_at: dn,
 			});
@@ -264,13 +334,25 @@ export default function ChatPage() {
 		// if chatID.current === -1 display some kind of error
 
 		const dn = Date.now();
+
+		// TODO: return * and push that on the chat message state
 		const result = await sqlite_db.execute(
 			`
 			INSERT INTO chat_messages (chat_id, model, role, choices, usage, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id;
 			`,
-			[chatID.current, "grok-beta", "user", JSON.stringify({ content: text }), null, dn],
+			[
+				chatID.current,
+				model_name,
+				"user",
+				JSON.stringify({
+					content: text,
+					attachments: attachments,
+				}),
+				null,
+				dn,
+			],
 		);
 		console.log("DB Result Insert Chat Message User - ", result);
 		// console.log(res);
@@ -278,9 +360,12 @@ export default function ChatPage() {
 		const ns = [...chatMessages];
 		ns.push({
 			chat_id: chatID.current,
-			model: "grok-beta",
+			model: model_name,
 			role: "user",
-			choices: JSON.stringify({ content: text }),
+			choices: JSON.stringify({
+				content: text,
+				attachments: attachments,
+			}),
 			usage: null,
 			created_at: dn,
 		});
@@ -338,7 +423,7 @@ export default function ChatPage() {
 					`,
 					[
 						chatID.current,
-						"grok-beta",
+						model_name,
 						"assistant",
 						JSON.stringify({
 							content: chatStreamRef.current,
@@ -352,7 +437,7 @@ export default function ChatPage() {
 
 				ns.push({
 					chat_id: chatID.current,
-					model: "grok-beta",
+					model: model_name,
 					role: "assistant",
 					choices: JSON.stringify({
 						content: chatStreamRef.current,
@@ -375,72 +460,72 @@ export default function ChatPage() {
 
 	// TODO: prompt completions
 	// async function AttemptToGetCompeltion() {
-		// // prompt completiions
-		// const response = await fetch("https://api.x.ai/v1/completions", {
-		// 	method: "POST",
-		// 	headers: {
-		// 		Authorization: `Bearer ${x_api_key}`,
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify({
-		// 		model: "grok-beta",
-		// 		prompt: text,
-		// 		stream: true,
-		// 	}),
-		// });
-		// console.log(response);
-		// const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
-		// if (!reader) return;
-		// // eslint-disable-next-line no-constant-condition
-		// chatStreamRef.current = "";
-		// while (true) {
-		// 	// eslint-disable-next-line no-await-in-loop
-		// 	const { value, done } = await reader.read();
-		// 	if (done) break;
-		// 	let dataDone = false;
-		// 	let finish_reason = "";
-		// 	let usage = null;
-		// 	const arr = value.split("\n");
-		// 	arr.forEach((data) => {
-		// 		if (data.length === 0) return; // ignore empty message
-		// 		if (data.startsWith(":")) return; // ignore sse comment message
-		// 		if (|| data === "data: [DONE]") {
-		// 			const json = JSON.parse(data.substring(6));
-		// 			dataDone = true;
-		// 			finish_reason = json.choices[0].finish_reason;
-		// 			usage = JSON.stringify(json.usage);
-		// 			return;
-		// 		}
-		// 		// const json = JSON.parse(data.substring(6));
-		// 		console.log(json);
-		// data === "<|eos|>" check
-		// 		chatStreamRef.current += json.choices[0].text;
-		// 		setChatText(chatStreamRef.current);
-		// 	});
-		// 	if (dataDone) {
-		// 		const dn = Date.now();
-		// 		const result = await sqlite_db.execute(
-		// 			`
-		// 			INSERT INTO chat_messages (chat_id, model, role, choices, usage, created_at)
-		// 			VALUES ($1, $2, $3, $4, $5, $6)
-		// 			RETURNING id;
-		// 			`,
-		// 			[
-		// 				chatID.current,
-		// 				"grok-beta",
-		// 				"assistant",
-		// 				JSON.stringify({
-		// 					message: chatStreamRef.current,
-		// 					finish_reason: finish_reason,
-		// 				}),
-		// 				usage,
-		// 				dn,
-		// 			],
-		// 		);
-		// 		break;
-		// 	}
-		// }
-		// chatStreamRef.current = "";
+	// // prompt completiions
+	// const response = await fetch("https://api.x.ai/v1/completions", {
+	// 	method: "POST",
+	// 	headers: {
+	// 		Authorization: `Bearer ${x_api_key}`,
+	// 		"Content-Type": "application/json",
+	// 	},
+	// 	body: JSON.stringify({
+	// 		model: "grok-beta",
+	// 		prompt: text,
+	// 		stream: true,
+	// 	}),
+	// });
+	// console.log(response);
+	// const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
+	// if (!reader) return;
+	// // eslint-disable-next-line no-constant-condition
+	// chatStreamRef.current = "";
+	// while (true) {
+	// 	// eslint-disable-next-line no-await-in-loop
+	// 	const { value, done } = await reader.read();
+	// 	if (done) break;
+	// 	let dataDone = false;
+	// 	let finish_reason = "";
+	// 	let usage = null;
+	// 	const arr = value.split("\n");
+	// 	arr.forEach((data) => {
+	// 		if (data.length === 0) return; // ignore empty message
+	// 		if (data.startsWith(":")) return; // ignore sse comment message
+	// 		if (|| data === "data: [DONE]") {
+	// 			const json = JSON.parse(data.substring(6));
+	// 			dataDone = true;
+	// 			finish_reason = json.choices[0].finish_reason;
+	// 			usage = JSON.stringify(json.usage);
+	// 			return;
+	// 		}
+	// 		// const json = JSON.parse(data.substring(6));
+	// 		console.log(json);
+	// data === "<|eos|>" check
+	// 		chatStreamRef.current += json.choices[0].text;
+	// 		setChatText(chatStreamRef.current);
+	// 	});
+	// 	if (dataDone) {
+	// 		const dn = Date.now();
+	// 		const result = await sqlite_db.execute(
+	// 			`
+	// 			INSERT INTO chat_messages (chat_id, model, role, choices, usage, created_at)
+	// 			VALUES ($1, $2, $3, $4, $5, $6)
+	// 			RETURNING id;
+	// 			`,
+	// 			[
+	// 				chatID.current,
+	// 				"grok-beta",
+	// 				"assistant",
+	// 				JSON.stringify({
+	// 					message: chatStreamRef.current,
+	// 					finish_reason: finish_reason,
+	// 				}),
+	// 				usage,
+	// 				dn,
+	// 			],
+	// 		);
+	// 		break;
+	// 	}
+	// }
+	// chatStreamRef.current = "";
 	// }
 
 	return (
@@ -471,23 +556,76 @@ export default function ChatPage() {
 						>
 							{chatMeta.title}
 						</div>
-						<Lozenge
-							style={{
-								marginTop: "0.5rem",
-							}}
-						>
-							grok-beta
-						</Lozenge>
 
-						{/* Model: */}
-						{/* {JSON.stringify(xAiModels)} */}
-						{/* {xAiModels !== null && (
-							<div>
-								{xAiModels.language_models.map((model: any) => {
-									return <div key={model.model}>{model.model}</div>;
-								})}
-							</div>
-						)} */}
+						<Popover>
+							<PopoverTrigger asChild>
+								<div>
+									<Lozenge
+										style={{
+											marginTop: "0.5rem",
+											cursor: "pointer",
+										}}
+									>
+										{chatSelectedModel?.model}
+									</Lozenge>
+								</div>
+							</PopoverTrigger>
+
+							<PopoverContent
+								align="start"
+								side={"bottom"}
+								style={{
+									backgroundColor: "var(--color-bg-compliment)",
+									padding: "0.5rem",
+									width: "12rem",
+									// marginLeft: "6rem",
+									left: "0",
+								}}
+							>
+								<p
+									style={{
+										color: "var(--text-sub-color)",
+									}}
+								>
+									xAI - Grok
+								</p>
+								<Divider
+									style={{
+										margin: "0.25rem 0",
+									}}
+								/>
+
+								{/* Model: */}
+								{/* {JSON.stringify(xAiModels)} */}
+								{xAiModels !== null && (
+									<div>
+										{xAiModels.language_models.map((model: any) => {
+											return (
+												<div
+													key={model.model}
+													value={model.model}
+													style={{
+														cursor: "pointer",
+														// backgroundColor: "var(--color-bg)",
+													}}
+													onClick={() => {
+														setChatSelectedModel({
+															model: model.model,
+															input_modalities:
+																model.input_modalities,
+															output_modalities:
+																model.output_modalities,
+														});
+													}}
+												>
+													{model.model}
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</PopoverContent>
+						</Popover>
 					</div>
 				</div>
 			</div>
@@ -542,11 +680,6 @@ export default function ChatPage() {
 								</AlertDialogFooter>
 							</AlertDialogContent>
 						</AlertDialog>
-						// <div>
-						// 	<p></p>
-						// 	<button onClick={() => blocker.proceed()}>Proceed</button>
-						// 	<button onClick={() => blocker.reset()}>Cancel</button>
-						// </div>
 					)}
 
 					{/* <div
@@ -624,7 +757,38 @@ export default function ChatPage() {
 									{message.role === "user" ? "You" : " - Grok"}
 								</div>
 
-								<Editor value={JSON.parse(message.choices).content} />
+								<div>
+									<Editor value={JSON.parse(message.choices).content} />
+
+									{message.choices.includes("attachments") &&
+										JSON.parse(message.choices).attachments.length > 0 && (
+											<div
+												style={{
+													padding: "0 1rem",
+												}}
+											>
+												<p
+													style={{
+														color: "var(--text-sub-color)",
+													}}
+												>
+													{JSON.parse(message.choices).attachments[0]}
+												</p>
+
+												<img
+													// src={`${JSON.parse(message.choices).attachments[0]}`}
+													src={convertFileSrc(
+														`${JSON.parse(message.choices).attachments[0]}`,
+													)}
+													alt=""
+													style={{
+														borderRadius: "0.5rem",
+														margin: "1rem 0",
+													}}
+												/>
+											</div>
+										)}
+								</div>
 							</div>
 						);
 					})}
@@ -683,6 +847,8 @@ export default function ChatPage() {
 				setText={setText}
 				onSubmit={AttemptToGetChatCompeltion}
 				inProgress={inProgres}
+				attachments={attachments}
+				setAttachments={setAttachments}
 			/>
 		</div>
 	);
